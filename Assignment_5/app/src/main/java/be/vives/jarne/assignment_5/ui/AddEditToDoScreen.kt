@@ -14,9 +14,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -24,8 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import be.vives.jarne.assignment_5.models.MockupToDo
 import be.vives.jarne.assignment_5.models.ToDo
 import be.vives.jarne.assignment_5.models.User
 
@@ -35,16 +33,11 @@ import be.vives.jarne.assignment_5.models.User
 @Composable
 fun AddEditToDoScreen(
     modifier: Modifier = Modifier,
-    toDo: ToDo? = null,
-    users: List<User> = MockupToDo.getUsers(),
-    viewModel: AddEditToDoViewModel = viewModel(),
+    viewModel: AddEditToDoViewModel,
+    onNavigateBack: () -> Unit = {},
     onSave: (ToDo) -> Unit = {},
     onCancel: () -> Unit = {},
 ) {
-    LaunchedEffect(toDo, users) {
-        viewModel.setInitialToDo(toDo, users)
-    }
-
     val uiState by viewModel.uiState.collectAsState()
 
     AddEditToDoContent(
@@ -67,6 +60,7 @@ fun AddEditToDoScreen(
             onSave(viewModel.getUpdatedToDo())
         },
         onCancel = onCancel,
+        onNavigateBack = onNavigateBack,
         modifier = modifier,
     )
 }
@@ -93,6 +87,7 @@ fun AddEditToDoContent(
     onAcceptanceDoneChange: (Boolean) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -102,6 +97,10 @@ fun AddEditToDoContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        IconButton(onClick = onNavigateBack) {
+            Text(text = "←", fontSize = 24.sp)
+        }
+
         // Title text
         Text(
             text = "Add/Edit ToDo",

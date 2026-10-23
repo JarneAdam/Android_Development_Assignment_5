@@ -11,10 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -25,7 +26,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import be.vives.jarne.assignment_5.R
 import be.vives.jarne.assignment_5.models.ToDo
 import be.vives.jarne.assignment_5.utility.Utility
@@ -33,19 +33,18 @@ import be.vives.jarne.assignment_5.utility.Utility
 @Composable
 fun ToDetailScreen(
     modifier: Modifier = Modifier,
-    toDo: ToDo? = null,
-    viewModel: ToDetailViewModel = viewModel(),
+    viewModel: ToDetailViewModel,
+    onNavigateBack: () -> Unit,
+    onNavigateToEdit: () -> Unit,
 ) {
-    LaunchedEffect(toDo) {
-        toDo?.let { viewModel.setToDo(it) }
-    }
-
     val uiState by viewModel.uiState.collectAsState()
 
     uiState.toDo?.let { currentToDo ->
         ToDetailContent(
             toDo = currentToDo,
             modifier = modifier,
+            onNavigateBack = onNavigateBack,
+            onNavigateToEdit = onNavigateToEdit,
         )
     }
 }
@@ -54,12 +53,18 @@ fun ToDetailScreen(
 fun ToDetailContent(
     toDo: ToDo,
     modifier: Modifier = Modifier,
+    onNavigateBack: () -> Unit = {},
+    onNavigateToEdit: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
     ) {
+        IconButton(onClick = onNavigateBack) {
+            Text(text = "←", fontSize = 24.sp)
+        }
+
         // Top section with image, number, and status
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -149,6 +154,15 @@ fun ToDetailContent(
                 SwitchRow(label = "Review & testing done?", checked = toDo.reviewAndTestingDone)
                 SwitchRow(label = "Acceptance done?", checked = toDo.acceptanceDone)
             }
+        }
+
+        Button(
+            onClick = onNavigateToEdit,
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(top = 16.dp),
+        ) {
+            Text("Bewerken")
         }
     }
 }

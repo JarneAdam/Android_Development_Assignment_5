@@ -1,24 +1,32 @@
 package be.vives.jarne.assignment_5.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import be.vives.jarne.assignment_5.models.MockupToDo
 import be.vives.jarne.assignment_5.models.ToDo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 
 data class ToDetailUiState(
     val toDo: ToDo? = null,
 )
 
-class ToDetailViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(ToDetailUiState(toDo = MockupToDo.getToDos().first()))
+class ToDetailViewModel(toDoId: Int) : ViewModel() {
+    private val selectedToDo = checkNotNull(
+        MockupToDo.getToDos().firstOrNull { it.number == toDoId }
+    ) { "No ToDo found with id $toDoId" }
+
+    private val _uiState = MutableStateFlow(ToDetailUiState(toDo = selectedToDo))
     val uiState: StateFlow<ToDetailUiState> = _uiState.asStateFlow()
 
-    fun setToDo(toDo: ToDo?) {
-        if (toDo != null) {
-            _uiState.update { it.copy(toDo = toDo) }
+    class Factory(private val toDoId: Int) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (!modelClass.isAssignableFrom(ToDetailViewModel::class.java)) {
+                throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
+            }
+            @Suppress("UNCHECKED_CAST")
+            return ToDetailViewModel(toDoId) as T
         }
     }
 }

@@ -1,6 +1,7 @@
 package be.vives.jarne.assignment_5.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import be.vives.jarne.assignment_5.models.MockupToDo
 import be.vives.jarne.assignment_5.models.ToDo
 import be.vives.jarne.assignment_5.models.User
@@ -21,36 +22,35 @@ data class AddEditToDoUiState(
     val initialToDo: ToDo? = null,
 )
 
-class AddEditToDoViewModel : ViewModel() {
+class AddEditToDoViewModel(toDoId: Int?) : ViewModel() {
+    private val initialToDo = toDoId?.let { id ->
+        checkNotNull(MockupToDo.getToDos().firstOrNull { it.number == id }) {
+            "No ToDo found with id $id"
+        }
+    }
+
     private val _uiState = MutableStateFlow(
         AddEditToDoUiState(
+            title = initialToDo?.title.orEmpty(),
+            description = initialToDo?.description.orEmpty(),
+            selectedUser = initialToDo?.assignedToUser,
             users = MockupToDo.getUsers(),
+            analysisDone = initialToDo?.analysisDone ?: false,
+            developmentDone = initialToDo?.developmentDone ?: false,
+            reviewAndTestingDone = initialToDo?.reviewAndTestingDone ?: false,
+            acceptanceDone = initialToDo?.acceptanceDone ?: false,
+            initialToDo = initialToDo,
         )
     )
     val uiState: StateFlow<AddEditToDoUiState> = _uiState.asStateFlow()
 
-    fun setInitialToDo(toDo: ToDo?, users: List<User> = MockupToDo.getUsers()) {
-        if (toDo != null) {
-            _uiState.update {
-                it.copy(
-                    title = toDo.title,
-                    description = toDo.description,
-                    selectedUser = toDo.assignedToUser,
-                    users = users,
-                    analysisDone = toDo.analysisDone,
-                    developmentDone = toDo.developmentDone,
-                    reviewAndTestingDone = toDo.reviewAndTestingDone,
-                    acceptanceDone = toDo.acceptanceDone,
-                    initialToDo = toDo,
-                )
+    class Factory(private val toDoId: Int?) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (!modelClass.isAssignableFrom(AddEditToDoViewModel::class.java)) {
+                throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
             }
-        } else {
-            _uiState.update {
-                it.copy(
-                    users = users,
-                    initialToDo = null,
-                )
-            }
+            @Suppress("UNCHECKED_CAST")
+            return AddEditToDoViewModel(toDoId) as T
         }
     }
 
